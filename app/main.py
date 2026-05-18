@@ -39,7 +39,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # In production, replace * with your Vercel URL
+    allow_origins=[
+    "https://YOUR_APP.vercel.app",
+    "http://localhost:8000",  # Keep for local dev
+],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
