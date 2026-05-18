@@ -34,4 +34,4 @@ EXPOSE 7860
 
 # ── STARTUP COMMAND ───────────────────────────────────────────────────────────
 # 0.0.0.0 = listen on all network interfaces (required in containers)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
