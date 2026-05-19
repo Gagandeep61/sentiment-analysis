@@ -55,9 +55,77 @@ app.add_middleware(
 print("Loading DistilBERT model...")
 sentiment_pipeline = pipeline(
     "sentiment-analysis",
-    model="distilbert-base-uncased-finetuned-sst-2-english"
+    model="distilroberta-base"
 )
 print("Model loaded successfully.")
+
+# ─── SARCASM DETECTION LAYER ───────────────────────────────────────────────
+
+def detect_sarcasm_contradiction(text: str) -> dict:
+    """
+    Detects sarcasm by looking for positive/negative word contradictions.
+    
+    Returns:
+        {
+            "is_sarcastic": bool,
+            "confidence": float (0-1),
+            "reason": str
+        }
+    """
+    text_lower = text.lower().strip()
+    
+    # POSITIVE WORDS - things people say when they mean it positively
+    positive_indicators = {
+        'great', 'amazing', 'wonderful', 'awesome', 'perfect', 'love', 
+        'excellent', 'fantastic', 'brilliant', 'superb', 'fantastic',
+        'marvelous', 'gorgeous', 'beautiful', 'happy', 'glad', 'pleased'
+    }
+    
+    # NEGATIVE CONTEXT WORDS - things that indicate a negative situation
+    negative_context = {
+        'hate', 'fail', 'failed', 'crash', 'crashed', 'broke', 'broken',
+        'worst', 'awful', 'terrible', 'horrible', 'disgusting', 'bad',
+        'issue', 'problem', 'broken', 'stuck', 'lost', 'disaster',
+        'useless', 'waste', 'disappointing', 'frustrating', 'annoying'
+    }
+    
+    # SARCASM MARKERS - phrases that often signal sarcasm
+    sarcasm_markers = [
+        r'\b(oh\s+)?(great|perfect|wonderful|amazing|sure|yeah)\s*[,\.!]',  # "Oh great." or "Perfect,"
+        r'(right|sure|yeah)\s+(right|ok|buddy)',  # "Yeah, right"
+        r'just\s+what\s+i\s+(need|needed)',  # "Just what I needed" (usually sarcastic)
+        r'(that\s+)?would\s+be\s+(great|perfect|wonderful)',  # "That would be great" (often sarcastic)
+        r'oh\s+(wonderful|fantastic|marvelous)',  # "Oh wonderful" (tone matters)
+    ]
+    
+    import re
+    
+    # Check for sarcasm markers
+    for marker_pattern in sarcasm_markers:
+        if re.search(marker_pattern, text_lower):
+            return {
+                "is_sarcastic": True,
+                "confidence": 0.6,
+                "reason": "Sarcasm phrase pattern detected"
+            }
+    
+    # Check for contradiction: positive words + negative context
+    words_in_text = set(text_lower.split())
+    has_positive = bool(words_in_text & positive_indicators)
+    has_negative_context = bool(words_in_text & negative_context)
+    
+    if has_positive and has_negative_context:
+        return {
+            "is_sarcastic": True,
+            "confidence": 0.5,
+            "reason": "Contradiction detected (positive words + negative situation)"
+        }
+    
+    return {
+        "is_sarcastic": False,
+        "confidence": 0.0,
+        "reason": "No sarcasm indicators found"
+    }
 
 # ─── INPUT SCHEMAS (Pydantic) ──────────────────────────────────────────────────
 # Pydantic auto-validates incoming JSON. If validation fails, FastAPI
@@ -95,20 +163,44 @@ class SentimentResult(BaseModel):
     sentiment: str
     confidence: float
     processing_time_ms: float
+    sarcasm_detected: bool = False
+    sarcasm_note: str | None = None
 
 
 # ─── HELPER FUNCTION ───────────────────────────────────────────────────────────
 
 def run_inference(text: str) -> dict:
-    """Runs DistilBERT inference and returns structured result."""
+    """Runs RoBERTa inference with sarcasm detection layer."""
     start = time.time()
+    
+    # Get base sentiment from RoBERTa
     result = sentiment_pipeline(text)[0]
+    base_sentiment = result["label"]
+    base_confidence = result["score"]
+    
+    # Check for sarcasm using rule-based layer
+    sarcasm_detection = detect_sarcasm_contradiction(text)
+    is_sarcastic = sarcasm_detection["is_sarcastic"]
+    sarcasm_confidence = sarcasm_detection["confidence"]
+    
+    # If strong sarcasm detected, flip the sentiment
+    if is_sarcastic and sarcasm_confidence >= 0.5:
+        final_sentiment = "NEGATIVE" if base_sentiment == "POSITIVE" else "POSITIVE"
+        # Lower confidence because the model might be confused
+        final_confidence = max(0.5, base_confidence * 0.7)
+    else:
+        final_sentiment = base_sentiment
+        final_confidence = base_confidence
+    
     elapsed = round((time.time() - start) * 1000, 2)
+    
     return {
         "text": text,
-        "sentiment": result["label"],
-        "confidence": round(result["score"], 4),
-        "processing_time_ms": elapsed
+        "sentiment": final_sentiment,
+        "confidence": round(final_confidence, 4),
+        "processing_time_ms": elapsed,
+        "sarcasm_detected": is_sarcastic,
+        "sarcasm_note": sarcasm_detection["reason"] if is_sarcastic else None
     }
 
 
