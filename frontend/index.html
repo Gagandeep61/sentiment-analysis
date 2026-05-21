@@ -6,39 +6,96 @@
   <title>Sentiment Analysis API</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
+ 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
       background: #0f172a;
       color: #e2e8f0;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      padding: 40px 20px;
     }
-
+ 
     .container {
-      background: #1e293b;
-      border-radius: 16px;
-      padding: 40px;
-      width: 100%;
-      max-width: 600px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      max-width: 900px;
+      margin: 0 auto;
     }
-
+ 
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+ 
     h1 {
-      font-size: 1.8rem;
-      margin-bottom: 8px;
+      font-size: 2.5rem;
+      margin-bottom: 12px;
       color: #f1f5f9;
     }
-
-    .subtitle {
+ 
+    .tagline {
       color: #94a3b8;
-      margin-bottom: 32px;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
     }
-
+ 
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+ 
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+ 
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+ 
+    .info-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+    }
+ 
+    .info-card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      color: #6366f1;
+    }
+ 
+    .info-item {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #334155;
+    }
+ 
+    .info-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+ 
+    .info-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+ 
+    .info-value {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+ 
+    .analyzer-card {
+      grid-column: 1 / -1;
+    }
+ 
     textarea {
       width: 100%;
       height: 120px;
@@ -51,17 +108,55 @@
       resize: vertical;
       outline: none;
       transition: border-color 0.2s;
+      font-family: inherit;
     }
-
+ 
     textarea:focus { border-color: #6366f1; }
-
+ 
+    .examples {
+      margin: 16px 0;
+      padding: 12px;
+      background: #0f172a;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+ 
+    .examples-title {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+ 
+    .example-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+ 
+    .example-chip {
+      padding: 6px 12px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+ 
+    .example-chip:hover {
+      background: #334155;
+      border-color: #6366f1;
+      color: #f1f5f9;
+    }
+ 
     .char-count {
       text-align: right;
       font-size: 0.75rem;
       color: #64748b;
       margin-top: 6px;
     }
-
+ 
     button {
       margin-top: 16px;
       width: 100%;
@@ -75,11 +170,11 @@
       cursor: pointer;
       transition: background 0.2s, transform 0.1s;
     }
-
+ 
     button:hover { background: #4f46e5; }
     button:active { transform: scale(0.98); }
     button:disabled { background: #334155; cursor: not-allowed; }
-
+ 
     .result {
       margin-top: 24px;
       padding: 20px;
@@ -87,30 +182,33 @@
       display: none;
       animation: fadeIn 0.3s ease;
     }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
+ 
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(8px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+ 
     .result.positive { background: #064e3b; border: 1px solid #059669; }
     .result.negative { background: #450a0a; border: 1px solid #dc2626; }
     .result.error    { background: #1c1917; border: 1px solid #ea580c; }
-
+ 
     .sentiment-label {
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 8px;
     }
-
+ 
     .confidence {
       font-size: 0.9rem;
       color: #94a3b8;
     }
-
+ 
     .meta {
       margin-top: 8px;
       font-size: 0.8rem;
       color: #64748b;
     }
-
+ 
     .spinner {
       display: inline-block;
       width: 18px; height: 18px;
@@ -121,90 +219,199 @@
       vertical-align: middle;
       margin-right: 8px;
     }
-
+ 
     @keyframes spin { to { transform: rotate(360deg); } }
+ 
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #334155;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+ 
+    .footer a {
+      color: #6366f1;
+      text-decoration: none;
+    }
+ 
+    .footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎯 Sentiment Analysis</h1>
-    <p class="subtitle">Powered by DistilBERT + FastAPI</p>
-
-    <textarea id="textInput" placeholder="Type something... e.g. 'I absolutely love this product!'" maxlength="5000"></textarea>
-    <div class="char-count"><span id="charCount">0</span> / 5000</div>
-
-    <button id="analyzeBtn" onclick="analyze()">Analyze Sentiment</button>
-
-    <div class="result" id="result">
-      <div class="sentiment-label" id="sentimentLabel"></div>
-      <div class="confidence" id="confidenceText"></div>
-      <div class="meta" id="metaText"></div>
+    <div class="header">
+      <h1>🎯 Sentiment Analysis</h1>
+      <p class="tagline">Real-time emotion detection powered by RoBERTa</p>
+    </div>
+ 
+    <div class="main-grid">
+      <!-- Info Panel -->
+      <div class="card info-card">
+        <h2>About This Model</h2>
+        
+        <div class="info-item">
+          <div class="info-label">What It Does</div>
+          <div class="info-value">Classifies text as POSITIVE or NEGATIVE based on emotional tone</div>
+        </div>
+ 
+        <div class="info-item">
+          <div class="info-label">Technology</div>
+          <div class="info-value">DistilRoBERTa (67M parameters, trained on social media data)</div>
+        </div>
+ 
+        <div class="info-item">
+          <div class="info-label">Best For</div>
+          <div class="info-value">Product reviews, customer feedback, social media posts, survey responses</div>
+        </div>
+ 
+        <div class="info-item">
+          <div class="info-label">Limitations</div>
+          <div class="info-value">Struggles with sarcasm, mixed emotions, and heavy context-dependent language</div>
+        </div>
+ 
+        <div class="info-item">
+          <div class="info-label">Processing</div>
+          <div class="info-value">~80-120ms per request (CPU inference, no GPU acceleration)</div>
+        </div>
+      </div>
+ 
+      <!-- How It Works Panel -->
+      <div class="card info-card">
+        <h2>How It Works</h2>
+        
+        <div class="info-item">
+          <div class="info-label">Step 1: Input</div>
+          <div class="info-value">You type a sentence (up to 5000 characters)</div>
+        </div>
+ 
+        <div class="info-item">
+          <div class="info-label">Step 2: Tokenization</div>
+          <div class="info-value">Text is broken into word pieces the model understands</div>
+        </div>
+ 
+        <div class="info-item">
+          <div class="info-label">Step 3: Inference</div>
+          <div class="info-value">RoBERTa analyzes patterns learned from millions of examples</div>
+        </div>
+ 
+        <div class="info-item">
+          <div class="info-label">Step 4: Output</div>
+          <div class="info-value">Returns sentiment (POSITIVE/NEGATIVE) + confidence score (0-100%)</div>
+        </div>
+      </div>
+ 
+      <!-- Analyzer Card -->
+      <div class="card analyzer-card">
+        <h2 style="margin-bottom: 16px; color: #f1f5f9;">Try It Yourself</h2>
+        
+        <textarea 
+          id="textInput" 
+          placeholder="Type or paste text here... e.g., 'I absolutely love this product!'"
+          maxlength="5000"
+        ></textarea>
+        <div class="char-count"><span id="charCount">0</span> / 5000</div>
+ 
+        <div class="examples">
+          <div class="examples-title">Quick examples (click to try):</div>
+          <div class="example-chips">
+            <span class="example-chip" onclick="fillExample('I absolutely love this product!')">😊 Positive</span>
+            <span class="example-chip" onclick="fillExample('This is terrible and disappointing.')">😞 Negative</span>
+            <span class="example-chip" onclick="fillExample('The service was okay, nothing special.')">😐 Neutral</span>
+            <span class="example-chip" onclick="fillExample('Wow, amazing quality and fast delivery!')">⭐ Review</span>
+          </div>
+        </div>
+ 
+        <button id="analyzeBtn" onclick="analyze()">Analyze Sentiment</button>
+ 
+        <div class="result" id="result">
+          <div class="sentiment-label" id="sentimentLabel"></div>
+          <div class="confidence" id="confidenceText"></div>
+          <div class="meta" id="metaText"></div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="footer">
+      Built with <a href="https://fastapi.tiangolo.com/" target="_blank">FastAPI</a> + 
+      <a href="https://huggingface.co/distilroberta-base" target="_blank">RoBERTa</a> • 
+      <a href="https://github.com/gagan61/sentiment-analysis" target="_blank">View Source</a> • 
+      <a href="YOUR_API_DOCS_URL/docs" target="_blank">API Docs</a>
     </div>
   </div>
-
+ 
   <script>
-    // ⚠️ Replace this URL after deploying to HuggingFace Spaces
-    const API_URL = "https://gagan61-sentiment-analysis-api.hf.space";
-
+    // ⚠️ REPLACE WITH YOUR ACTUAL HUGGINGFACE SPACE URL
+    const API_URL = "https://YOUR-HF-SPACE-URL.hf.space";
+ 
     const textInput = document.getElementById("textInput");
     const charCount = document.getElementById("charCount");
-
+ 
     textInput.addEventListener("input", () => {
       charCount.textContent = textInput.value.length;
     });
-
+ 
+    function fillExample(text) {
+      textInput.value = text;
+      charCount.textContent = text.length;
+      textInput.focus();
+    }
+ 
     async function analyze() {
       const text = textInput.value.trim();
-
+ 
       if (!text) {
         showError("Please enter some text first.");
         return;
       }
-
+ 
       const btn = document.getElementById("analyzeBtn");
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span>Analyzing...';
-
+ 
       try {
         const response = await fetch(`${API_URL}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text })
         });
-
+ 
         if (!response.ok) {
           const err = await response.json();
           throw new Error(err.detail || `HTTP ${response.status}`);
         }
-
+ 
         const data = await response.json();
         showResult(data);
-
+ 
       } catch (error) {
-        showError(error.message || "Could not connect to API. Is the backend running?");
+        showError(error.message || "Could not connect to API. Check if backend is running.");
       } finally {
         btn.disabled = false;
         btn.textContent = "Analyze Sentiment";
       }
     }
-
+ 
     function showResult(data) {
       const resultDiv = document.getElementById("result");
       const isPositive = data.sentiment === "POSITIVE";
-
+ 
       resultDiv.className = `result ${isPositive ? "positive" : "negative"}`;
       resultDiv.style.display = "block";
-
+ 
       document.getElementById("sentimentLabel").textContent =
         isPositive ? "✅ POSITIVE" : "❌ NEGATIVE";
-
+ 
       document.getElementById("confidenceText").textContent =
         `Confidence: ${(data.confidence * 100).toFixed(2)}%`;
-
+ 
       document.getElementById("metaText").textContent =
         `Processed in ${data.processing_time_ms}ms`;
     }
-
+ 
     function showError(message) {
       const resultDiv = document.getElementById("result");
       resultDiv.className = "result error";
@@ -213,11 +420,12 @@
       document.getElementById("confidenceText").textContent = message;
       document.getElementById("metaText").textContent = "";
     }
-
-    // Allow Enter key (Ctrl+Enter) to submit
+ 
+    // Keyboard shortcut: Ctrl+Enter to analyze
     textInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && e.ctrlKey) analyze();
     });
   </script>
 </body>
 </html>
+ 

@@ -10,11 +10,11 @@ app_port: 8000
 <div align="center">
 # 🎯 Sentiment Analysis API
  
-**Production ML API** that classifies text as POSITIVE or NEGATIVE using DistilBERT.  
+**Production ML API** that classifies text as POSITIVE or NEGATIVE using RoBERTa.  
 Built with FastAPI · Docker · HuggingFace Transformers · Deployed on HuggingFace Spaces + Vercel.
  
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://sentiment-analysis-lake.vercel.app)
-[![API Docs](https://img.shields.io/badge/API%20Docs-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://gagandeep61-sentiment-analysis.hf.space/docs)
+[![API Docs](https://img.shields.io/badge/API%20Docs-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://gagan61-sentiment-analysis.hf.space/docs)
 [![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
@@ -24,14 +24,14 @@ Built with FastAPI · Docker · HuggingFace Transformers · Deployed on HuggingF
  
 ## 📌 What This Is
  
-A **production-style REST API** that wraps the DistilBERT transformer model for real-time sentiment classification. This project bridges the gap between training ML models and actually **serving** them — the skill that matters in production engineering.
+A **production-style REST API** that wraps the RoBERTa transformer model for real-time sentiment classification. This project bridges the gap between training ML models and actually **serving** them — the skill that matters in production engineering.
  
 ```
 Browser (Vercel)
      ↓  POST /analyze {"text": "I love this!"}
 FastAPI Backend (HuggingFace Spaces / Docker)
      ↓
-DistilBERT Inference
+RoBERTa Inference
      ↓
 {"sentiment": "POSITIVE", "confidence": 0.9998, "processing_time_ms": 82.4}
 ```
@@ -43,8 +43,8 @@ DistilBERT Inference
 | Resource | URL |
 |----------|-----|
 | **Frontend UI** | https://sentiment-analysis-lake.vercel.app |
-| **API Base URL** | https://gagandeep61-sentiment-analysis.hf.space |
-| **Interactive API Docs** | https://gagandeep61-sentiment-analysis.hf.space/docs |
+| **API Base URL** | https://gagan61-sentiment-analysis.hf.space |
+| **Interactive API Docs** | https://gagan61-sentiment-analysis.hf.space/docs |
 | **GitHub Repo** | https://github.com/Gagandeep61/sentiment-analysis |
  
 ---
@@ -69,7 +69,7 @@ sentiment-analysis/
  
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| **ML Model** | DistilBERT (`distilbert-base-uncased-finetuned-sst-2-english`) | Pre-trained, no retraining needed, 97% of BERT's accuracy at 40% the size |
+| **ML Model** | RoBERTa (`RoBERTa-base-uncased-finetuned-sst-2-english`) | Pre-trained, no retraining needed, 97% of BERT's accuracy at 40% the size |
 | **Backend** | FastAPI + Uvicorn | Auto-generates OpenAPI docs, Pydantic validation, async-ready |
 | **Validation** | Pydantic v2 | Rejects empty strings, enforces 5000-char limit before model runs |
 | **Rate Limiting** | slowapi | Per-IP limiting (30 req/min single, 10 req/min batch) — prevents free-tier abuse |
@@ -86,7 +86,7 @@ sentiment-analysis/
 Health check — used by monitoring tools and HF Spaces.
  
 ```json
-Response: {"status": "healthy", "model": "distilbert-base-uncased-finetuned-sst-2-english"}
+Response: {"status": "healthy", "model": "RoBERTa-base-uncased-finetuned-sst-2-english"}
 ```
  
 ---
@@ -199,15 +199,15 @@ curl -X POST http://localhost:7860/analyze \
  
 ```bash
 # Single analysis
-curl -X POST https://gagandeep61-sentiment-analysis.hf.space/analyze \
+curl -X POST https://gagan61-sentiment-analysis.hf.space/analyze \
   -H "Content-Type: application/json" \
   -d '{"text": "This is an incredible product, I highly recommend it!"}'
  
 # Health check
-curl https://gagandeep61-sentiment-analysis.hf.space/health
+curl https://gagan61-sentiment-analysis.hf.space/health
  
 # Batch analysis
-curl -X POST https://gagandeep61-sentiment-analysis.hf.space/batch-analyze \
+curl -X POST https://gagan61-sentiment-analysis.hf.space/batch-analyze \
   -H "Content-Type: application/json" \
   -d '{"texts": [{"text": "Great!"}, {"text": "Terrible."}]}'
 ```
@@ -218,7 +218,7 @@ curl -X POST https://gagandeep61-sentiment-analysis.hf.space/batch-analyze \
 import requests
  
 response = requests.post(
-    "https://gagandeep61-sentiment-analysis.hf.space/analyze",
+    "https://gagan61-sentiment-analysis.hf.space/analyze",
     json={"text": "FastAPI makes building APIs genuinely enjoyable."}
 )
 print(response.json())
@@ -227,14 +227,14 @@ print(response.json())
  
 ### via Interactive Docs
  
-Visit https://gagandeep61-sentiment-analysis.hf.space/docs — FastAPI auto-generates a full Swagger UI where you can test every endpoint directly in the browser.
+Visit https://gagan61-sentiment-analysis.hf.space/docs — FastAPI auto-generates a full Swagger UI where you can test every endpoint directly in the browser.
  
 ---
  
 ## 🔑 Key Technical Decisions
  
-**Why DistilBERT (not a custom-trained model)?**  
-Training a sentiment classifier takes weeks and labeled datasets. For production ML engineering, the key skill is **serving** models, not training them. DistilBERT is pre-trained on SST-2 (67M parameters) with 97% of BERT's accuracy at 40% the model size — ideal for CPU inference.
+**Why RoBERTa (not a custom-trained model)?**  
+Training a sentiment classifier takes weeks and labeled datasets. For production ML engineering, the key skill is **serving** models, not training them. RoBERTa is pre-trained on SST-2 (67M parameters) with 97% of BERT's accuracy at 40% the model size — ideal for CPU inference.
  
 **Why CORS middleware?**  
 Browsers block cross-origin requests by default. Since the frontend (Vercel domain) and backend (HF Spaces domain) are on different origins, `CORSMiddleware` is required — without it, every browser request would silently fail with a CORS error.
@@ -246,7 +246,7 @@ Running on HuggingFace Spaces free tier with a shared CPU. Without `slowapi`, a 
 Pydantic validators run before the model touches the input. Empty strings and oversized payloads are rejected at the schema layer (422) — the model never runs on invalid data, which saves latency and prevents potential crashes.
  
 **Why bake the model into the Docker image?**  
-Downloading DistilBERT (~260MB) at container startup would add 30+ seconds to every cold start. The Dockerfile runs a Python one-liner during `docker build` to pre-download and cache the model in the image layer — cold starts are now just Python + FastAPI startup (~5 seconds).
+Downloading RoBERTa (~260MB) at container startup would add 30+ seconds to every cold start. The Dockerfile runs a Python one-liner during `docker build` to pre-download and cache the model in the image layer — cold starts are now just Python + FastAPI startup (~5 seconds).
  
 ---
  
@@ -263,7 +263,7 @@ Downloading DistilBERT (~260MB) at container startup would add 30+ seconds to ev
 | Metric | Value |
 |--------|-------|
 | Inference latency (warm) | 80–120ms per request |
-| Model size | ~260MB (DistilBERT) |
+| Model size | ~260MB (RoBERTa) |
 | Batch throughput | ~8–12 texts/second |
 | Cold start (HF Spaces) | 25–45 seconds |
 | Docker image size | ~2.1GB (PyTorch + model) |
