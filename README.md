@@ -10,11 +10,11 @@ app_port: 7860
 <div align="center">
 # 🎯 Sentiment Analysis API
  
-**Production ML API** that classifies text as POSITIVE, NEGATIVE, or NEUTRAL using Twitter RoBERTa.  
+**DEPLOYED ML API** classifying text as POSITIVE, NEGATIVE, or NEUTRAL using Twitter RoBERTa.  
 Built with FastAPI · Docker · HuggingFace Transformers · Deployed on HuggingFace Spaces + Vercel.
  
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://sentiment-analysis-lake.vercel.app)
-[![API Docs](https://img.shields.io/badge/API%20Docs-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://gagan61-sentiment-analysis.hf.space/docs)
+[![API Docs](https://img.shields.io/badge/API%20Docs-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://gagan61-sentiment-analysis-api.hf.space/docs)
 [![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
@@ -24,7 +24,7 @@ Built with FastAPI · Docker · HuggingFace Transformers · Deployed on HuggingF
  
 ## 📌 What This Is
  
-A **production-style REST API** that wraps Twitter RoBERTa transformer model for real-time 3-class sentiment classification (POSITIVE/NEGATIVE/NEUTRAL). This project bridges training ML models and **serving them in production** — the skill that matters in real engineering roles.
+A production-style REST API wrapping Twitter RoBERTa for real-time 3-class sentiment classification. This project bridges training ML models and **serving them in production ready form** — the skill that matters in real engineering roles.
  
 ```
 Browser (Vercel)
@@ -43,8 +43,8 @@ Twitter RoBERTa Inference
 | Resource | URL |
 |----------|-----|
 | **Frontend UI** | https://sentiment-analysis-lake.vercel.app |
-| **API Base URL** | https://gagan61-sentiment-analysis.hf.space |
-| **API Docs (Swagger)** | https://gagan61-sentiment-analysis.hf.space/docs |
+| **API Base URL** | https://gagan61-sentiment-analysis-api.hf.space |
+| **API Docs (Swagger)** | https://gagan61-sentiment-analysis-api.hf.space/docs |
 | **GitHub Repo** | https://github.com/Gagandeep61/sentiment-analysis |
  
 ---
@@ -57,8 +57,8 @@ sentiment-analysis/
 │   ├── __init__.py
 │   └── main.py           ← FastAPI: endpoints, CORS, rate limiting, validation
 ├── frontend/
-│   └── index.html        ← Vanilla JS UI + model education panel
-├── Dockerfile            ← Containerization (python:3.10-slim, port 7860)
+│   └── index.html        ← Vanilla JS UI
+├── Dockerfile            ← python:3.10-slim, port 7860
 ├── requirements.txt      ← Pinned dependencies
 └── README.md
 ```
@@ -67,78 +67,43 @@ sentiment-analysis/
  
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| **Model** | Twitter RoBERTa (cardiffnlp) | Trained on 124M tweets, handles modern slang & informal text better than SST-2 |
-| **Backend** | FastAPI + Uvicorn | Auto-docs, Pydantic validation, lightweight, async-ready |
-| **Rate Limiting** | slowapi | 30 req/min single, 10 req/min batch — prevents abuse on free tier |
-| **CORS** | FastAPI Middleware | Enables Vercel → HF Spaces cross-origin calls |
+| **Model** | Twitter RoBERTa (cardiffnlp) | Trained on 124M tweets — handles slang, emojis, informal text |
+| **Backend** | FastAPI + Uvicorn | Auto-docs, Pydantic validation, async-ready |
+| **Rate Limiting** | slowapi | 30 req/min (single), 10 req/min (batch) — prevents free-tier abuse |
+| **CORS** | FastAPI Middleware | Required for Vercel → HF Spaces cross-origin calls |
 | **Container** | Docker | Reproducible builds, model pre-downloaded at build time |
-| **Deployment** | HF Spaces + Vercel | Free Docker hosting + static frontend hosting, auto-deploy from GitHub |
+| **Deployment** | HF Spaces + Vercel | Free Docker + static hosting, auto-deploy from GitHub |
  
 ---
  
 ## 📡 API Endpoints
  
 ### `GET /health`
-Health check.
- 
 ```json
-Response: {"status": "healthy", "model": "twitter-roberta-sentiment"}
+{"status": "healthy", "model": "twitter-roberta-sentiment"}
 ```
- 
----
  
 ### `POST /analyze`
-Single text sentiment analysis.
+**Rate limit**: 30 req/min · **Input**: 1–5000 characters
  
-**Request:**
 ```json
-{
-  "text": "I absolutely love this product!"
-}
+// Request
+{"text": "I absolutely love this product!"}
+ 
+// Response
+{"text": "...", "sentiment": "POSITIVE", "confidence": 0.9998, "processing_time_ms": 45.2}
 ```
- 
-**Response:**
-```json
-{
-  "text": "I absolutely love this product!",
-  "sentiment": "POSITIVE",
-  "confidence": 0.9998,
-  "processing_time_ms": 45.2
-}
-```
- 
-**Rate limit**: 30 requests/minute per IP  
-**Validation**: Text must be 1-5000 characters
- 
----
  
 ### `POST /batch-analyze`
-Multiple texts (max 20).
+**Rate limit**: 10 req/min · **Max**: 20 items
  
-**Request:**
 ```json
-{
-  "texts": [
-    {"text": "Amazing service!"},
-    {"text": "Terrible experience."},
-    {"text": "It was okay."}
-  ]
-}
-```
+// Request
+{"texts": [{"text": "Amazing!"}, {"text": "Terrible."}, {"text": "It was okay."}]}
  
-**Response:**
-```json
-{
-  "results": [
-    {"text": "Amazing service!", "sentiment": "POSITIVE", "confidence": 0.9997, "processing_time_ms": 42.1},
-    {"text": "Terrible experience.", "sentiment": "NEGATIVE", "confidence": 0.9991, "processing_time_ms": 41.8},
-    {"text": "It was okay.", "sentiment": "NEUTRAL", "confidence": 0.8123, "processing_time_ms": 41.5}
-  ],
-  "count": 3
-}
+// Response
+{"results": [...], "count": 3}
 ```
- 
-**Rate limit**: 10 requests/minute per IP
  
 ---
  
@@ -148,7 +113,6 @@ Multiple texts (max 20).
 - Python 3.10+
 - 2GB RAM (for model)
 ### Direct (No Docker)
- 
 ```bash
 git clone https://github.com/Gagandeep61/sentiment-analysis.git
 cd sentiment-analysis
@@ -158,13 +122,11 @@ source venv/bin/activate        # Mac/Linux
 # venv\Scripts\activate         # Windows
  
 pip install -r requirements.txt
- 
 uvicorn app.main:app --reload --port 8000
-# Visit http://localhost:8000/docs
+# Docs: http://localhost:8000/docs
 ```
  
 ### Docker
- 
 ```bash
 docker build -t sentiment-api .
 docker run -p 7860:7860 sentiment-api
@@ -174,7 +136,6 @@ docker run -p 7860:7860 sentiment-api
  
 ## 🧪 Test the API
  
-**Python:**
 ```python
 import requests
 r = requests.post("https://gagan61-sentiment-analysis.hf.space/analyze",
@@ -182,40 +143,40 @@ r = requests.post("https://gagan61-sentiment-analysis.hf.space/analyze",
 print(r.json())
 ```
  
-**Browser**: Visit https://sentiment-analysis-lake.vercel.app
- 
-**Swagger UI**: Visit https://gagan61-sentiment-analysis.hf.space/docs
+Or visit the **[Swagger UI](https://gagan61-sentiment-analysis.hf.space/docs)** directly.
  
 ---
  
-## 🔑 Key Decisions
+## 🔑 Key Technical Decisions
  
-**Why Twitter RoBERTa?**  
-Trained on 124M real tweets. Handles modern language (slang, emojis, informal) better than academic datasets. Still pre-trained — no training needed.
+**Why Twitter RoBERTa over DistilBERT?**  
+DistilBERT was trained on SST-2 (movie reviews) — no slang, no emojis, no informal text. Twitter RoBERTa was trained on 124M real tweets, making it significantly better for real-world text.
  
 **Why 3-class (not 2-class)?**  
-Real sentiment has neutral/mixed cases. "The service was okay" isn't positive or negative.
+Binary positive/negative misses neutral cases. "The service was okay" is neither — forcing it into two buckets gives wrong results.
  
 **Why CORS middleware?**  
-Browsers block cross-origin requests by default. Frontend (Vercel) and backend (HF Spaces) have different domains → need explicit CORS.
+Browsers block cross-origin requests by default. Frontend (Vercel) and backend (HF Spaces) have different domains — without `CORSMiddleware`, every browser request silently fails.
  
 **Why rate limiting?**  
-Free tier has shared CPU. Without limits, one user can crash the service for everyone.
+Free-tier CPU is shared. Without `slowapi`, one bad actor can flood the API and crash it for everyone.
  
-**Why pre-download model in Docker?**  
-Model is 500MB. Downloading at startup = 30-45s cold start. Pre-downloading during build = 2-3s startup.
+**Why pre-download model in Dockerfile?**  
+Model is ~500MB. Downloading at startup adds 30–45s to every cold start. Pre-downloading during `docker build` brings startup down to 2–3s.
  
 ---
  
 ## ⚠️ Known Limitations
  
-| Limitation | Why | Workaround |
-|-----------|-----|-----------|
-| Cold starts (30-45s) | HF Spaces free tier sleeps after 15 min | Use Render for always-on |
-| CPU only (~50-100ms) | No GPU on free tier | Use paid GPU tier or RunPod |
-| In-memory rate limits | Reset on restart | Add Redis for production |
-| Sarcasm misses | Model trained on straightforward sentiment | Fine-tune on sarcasm data |
- 
+| Limitation | Cause | Fix |
+|-----------|-------|-----|
+| Cold starts (30–45s) | HF Spaces sleeps after 15min idle | Migrate to Render |
+| CPU-only inference | Free tier, no GPU | Paid GPU tier or RunPod |
+| In-memory rate limits | Resets on container restart | Redis-backed rate limiting |
+| Sarcasm detection | Model sees "great" → positive | Fine-tune on sarcasm dataset |
+| Non-English text | Model is English-only | Use multilingual model |
+| Very short inputs ("lol", "ok") | Low-confidence outputs, not filtered |  Preprocess and Normalize Slang | 
+ | Synchronous inference | Transformer model blocks event loop under concurrent load | Use run_in_executor |
 ---
  
 ## 📈 Performance
@@ -223,42 +184,41 @@ Model is 500MB. Downloading at startup = 30-45s cold start. Pre-downloading duri
 | Metric | Value |
 |--------|-------|
 | Inference latency (warm) | 45–100ms |
-| Model size | ~500MB (Twitter RoBERTa) |
-| Batch throughput | ~10–15 texts/second |
-| Cold start (HF Spaces) | 30–45 seconds |
+| Model size | ~500MB |
 | Docker image | ~2.5GB |
+| Batch throughput | ~10–15 texts/second |
+| Cold start | 30–45 seconds |
  
 ---
  
 ## 🎤 Resume Bullet
  
 ```
-Sentiment Analysis API | FastAPI · Twitter RoBERTa · Docker · HF Spaces · Vercel
+Sentiment Analysis API | FastAPI · Twitter RoBERTa · Docker · HuggingFace Spaces · Vercel
  
-• Built production ML API serving 3-class sentiment (POSITIVE/NEGATIVE/NEUTRAL) on social media text
-• Backend: FastAPI with rate limiting (30 req/min), CORS, Pydantic validation, batch processing
-• Model: Twitter RoBERTa (124M tweet training) for modern language understanding
-• Deployment: Docker containerized on HuggingFace Spaces (backend) + Vercel (frontend)
-• Auto-deploy from GitHub with model pre-cached at build time for 2-3s cold starts
+• Built and deployed a REST API serving 3-class sentiment classification (POSITIVE/NEGATIVE/NEUTRAL)
+• Used Twitter RoBERTa (trained on 124M tweets) over DistilBERT for better real-world text handling
+• Containerized with Docker; model pre-loaded at build time to reduce warm startup to ~2–3s
+• Rate limiting (slowapi), CORS middleware, Pydantic validation — handles cross-origin browser requests
+• Deployed backend on HuggingFace Spaces, frontend on Vercel with auto-deploy from GitHub
 ```
  
 ---
  
 ## 🛣️ Next Steps
  
-- [ ] Migrate to Render for 24/7 uptime
-- [ ] Add request logging (Prometheus)
+- [ ] Migrate to Render for always-on serving (no cold starts)
+- [ ] Add request logging with Prometheus
 - [ ] Fine-tune on sarcasm/mixed sentiment data
-- [ ] Add API authentication (API keys)
-- [ ] Cache frequent queries (Redis)
+- [ ] Add API key authentication
+- [ ] Redis-backed rate limiting for multi-replica support
 ---
  
 ## 👤 Author
  
-**Gagandeep Singh**  
-GitHub: [@Gagandeep61](https://github.com/Gagandeep61)
+**Gagandeep Singh** · [@Gagandeep61](https://github.com/Gagandeep61)
  
 ---
  
-*Production ML engineering: serving models beats training them.*
+*Deployed ML engineering: serving models beats training them.*
  
