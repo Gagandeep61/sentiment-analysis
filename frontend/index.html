@@ -190,6 +190,7 @@
  
     .result.positive { background: #064e3b; border: 1px solid #059669; }
     .result.negative { background: #450a0a; border: 1px solid #dc2626; }
+    .result.neutral  { background: #334155; border: 1px solid #64748b; }
     .result.error    { background: #1c1917; border: 1px solid #ea580c; }
  
     .sentiment-label {
@@ -245,41 +246,34 @@
   <div class="container">
     <div class="header">
       <h1>🎯 Sentiment Analysis</h1>
-      <p class="tagline">Real-time emotion detection powered by RoBERTa</p>
+      <p class="tagline">Real-time emotion detection powered by AI</p>
     </div>
  
     <div class="main-grid">
-      <!-- Info Panel -->
       <div class="card info-card">
         <h2>About This Model</h2>
         
         <div class="info-item">
           <div class="info-label">What It Does</div>
-          <div class="info-value">Classifies text as POSITIVE or NEGATIVE based on emotional tone</div>
+          <div class="info-value">Classifies text as POSITIVE, NEGATIVE, or NEUTRAL based on emotional tone.</div>
         </div>
  
         <div class="info-item">
           <div class="info-label">Technology</div>
-          <div class="info-value">DistilRoBERTa (67M parameters, trained on social media data)</div>
+          <div class="info-value">Twitter RoBERTa (Trained on 124 million tweets)</div>
         </div>
  
         <div class="info-item">
           <div class="info-label">Best For</div>
-          <div class="info-value">Product reviews, customer feedback, social media posts, survey responses</div>
-        </div>
- 
-        <div class="info-item">
-          <div class="info-label">Limitations</div>
-          <div class="info-value">Struggles with sarcasm, mixed emotions, and heavy context-dependent language</div>
+          <div class="info-value">Product reviews, social media posts, modern slang, and everyday conversation.</div>
         </div>
  
         <div class="info-item">
           <div class="info-label">Processing</div>
-          <div class="info-value">~80-120ms per request (CPU inference, no GPU acceleration)</div>
+          <div class="info-value">GPU Accelerated Inference for lightning-fast results.</div>
         </div>
       </div>
  
-      <!-- How It Works Panel -->
       <div class="card info-card">
         <h2>How It Works</h2>
         
@@ -300,11 +294,10 @@
  
         <div class="info-item">
           <div class="info-label">Step 4: Output</div>
-          <div class="info-value">Returns sentiment (POSITIVE/NEGATIVE) + confidence score (0-100%)</div>
+          <div class="info-value">Returns sentiment + a confidence score (0-100%)</div>
         </div>
       </div>
  
-      <!-- Analyzer Card -->
       <div class="card analyzer-card">
         <h2 style="margin-bottom: 16px; color: #f1f5f9;">Try It Yourself</h2>
         
@@ -337,15 +330,14 @@
  
     <div class="footer">
       Built with <a href="https://fastapi.tiangolo.com/" target="_blank">FastAPI</a> + 
-      <a href="https://huggingface.co/distilroberta-base" target="_blank">RoBERTa</a> • 
-      <a href="https://github.com/gagan61/sentiment-analysis" target="_blank">View Source</a> • 
-      <a href="YOUR_API_DOCS_URL/docs" target="_blank">API Docs</a>
+      <a href="https://huggingface.co/spaces/gagan61/sentiment-analysis-api" target="_blank">RoBERTa</a> • 
+      <a href="https://github.com/Gagandeep61/sentiment-analysis" target="_blank">View Source</a> • 
+      <a href="https://huggingface.co/spaces/gagan61/sentiment-analysis-api/docs" target="_blank">API Docs</a>
     </div>
   </div>
  
   <script>
-    // ⚠️ REPLACE WITH YOUR ACTUAL HUGGINGFACE SPACE URL
-    const API_URL = "https://YOUR-HF-SPACE-URL.hf.space";
+    const API_URL = "https://gagan61-sentiment-analysis-api.hf.space";
  
     const textInput = document.getElementById("textInput");
     const charCount = document.getElementById("charCount");
@@ -397,13 +389,23 @@
  
     function showResult(data) {
       const resultDiv = document.getElementById("result");
-      const isPositive = data.sentiment === "POSITIVE";
+      
+      // Force uppercase so it always matches properly, regardless of what the AI outputs
+      const sentiment = String(data.sentiment).toUpperCase(); 
  
-      resultDiv.className = `result ${isPositive ? "positive" : "negative"}`;
+      // 3-Class Logic Setup
+      if (sentiment === "POSITIVE") {
+        resultDiv.className = "result positive";
+        document.getElementById("sentimentLabel").textContent = "✅ POSITIVE";
+      } else if (sentiment === "NEUTRAL") {
+        resultDiv.className = "result neutral";
+        document.getElementById("sentimentLabel").textContent = "😐 NEUTRAL";
+      } else {
+        resultDiv.className = "result negative";
+        document.getElementById("sentimentLabel").textContent = "❌ NEGATIVE";
+      }
+ 
       resultDiv.style.display = "block";
- 
-      document.getElementById("sentimentLabel").textContent =
-        isPositive ? "✅ POSITIVE" : "❌ NEGATIVE";
  
       document.getElementById("confidenceText").textContent =
         `Confidence: ${(data.confidence * 100).toFixed(2)}%`;
@@ -428,4 +430,3 @@
   </script>
 </body>
 </html>
- 

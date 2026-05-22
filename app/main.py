@@ -24,7 +24,7 @@ limiter = Limiter(key_func=get_remote_address)
  
 app = FastAPI(
     title="Sentiment Analysis API",
-    description="Classifies text as POSITIVE or NEGATIVE using RoBERTa",
+    description="Classifies text as POSITIVE, NEGATIVE, or NEUTRAL using RoBERTa",
     version="1.0.0"
 )
  
@@ -36,10 +36,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://sentiment-analysis-lake.vercel.app",
-        "http://localhost:8000",
-        "http://localhost:3000",
-    ],
+    "https://sentiment-analysis-lake.vercel.app",
+    "http://localhost:8000",
+],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,10 +46,10 @@ app.add_middleware(
  
 # ─── MODEL LOADING ─────────────────────────────────────────────────────────────
  
-print("Loading RoBERTa model...")
+print("Loading 3-Class Twitter RoBERTa model on GPU...")
 sentiment_pipeline = pipeline(
     "sentiment-analysis",
-    model="distilroberta-base"
+    model="cardiffnlp/twitter-roberta-base-sentiment-latest",
 )
 print("Model loaded successfully.")
  
@@ -116,7 +115,7 @@ def root():
 @app.get("/health")
 def health():
     """Health check endpoint."""
-    return {"status": "healthy", "model": "distilroberta-base"}
+    return {"status": "healthy", "model": "twitter-roberta-sentiment"}
  
  
 @app.post("/analyze", response_model=SentimentResult)
@@ -150,4 +149,4 @@ def batch_analyze(request: Request, body: BatchInput):
         return {"results": results, "count": len(results)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Batch inference failed: {str(e)}")
- 
+    
