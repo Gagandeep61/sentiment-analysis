@@ -14,9 +14,8 @@ Built with FastAPI · Docker · HuggingFace Transformers · Deployed on HuggingF
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://sentiment-analysis-lake.vercel.app)
 [![API Docs](https://img.shields.io/badge/API%20Docs-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://gagan61-sentiment-analysis-api.hf.space/docs)
-[![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
-[![CI/CD](https://github.com/Gagandeep61/sentiment-analysis/actions/workflows/deploy.yml/badge.svg)](https://github.com/Gagandeep61/sentiment-analysis/actions)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/Gagandeep61/sentiment-analysis/deploy.yml?style=for-the-badge&logo=github)](https://github.com/Gagandeep61/sentiment-analysis/actions)
 
 ---
 
